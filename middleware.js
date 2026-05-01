@@ -1,24 +1,24 @@
 export const config = {
-  // Skrip ini hanya akan berjalan saat user membuka halaman utama (/)
   matcher: '/',
 };
 
 export default function middleware(request) {
   const url = new URL(request.url);
-  
-  // Deteksi negara dari fitur bawaan Vercel (geo)
-  // Jika tidak terdeteksi, kita anggap US (Luar Negeri)
-  const country = request.geo?.country || 'US';
 
-  // Logika pengalihan (Redirect)
-  if (country === 'ID') {
-    // Arahkan ke folder /id jika dari Indonesia
+  // Ambil data negara langsung dari header Vercel
+  const country = request.headers.get('x-vercel-ip-country') || 'US';
+  
+  // Ambil data bahasa browser
+  const acceptLanguage = request.headers.get('accept-language') || '';
+  const isIndo = country === 'ID' || acceptLanguage.toLowerCase().includes('id');
+
+  // Logika pengalihan
+  if (isIndo) {
     url.pathname = '/id';
   } else {
-    // Arahkan ke folder /en jika dari luar negeri
     url.pathname = '/en';
   }
 
-  // Lakukan pengalihan (Redirect 307 - Temporary)
-  return Response.redirect(url);
+  // Gunakan redirect 307 (Temporary) agar browser tidak 'hafal' link yang salah
+  return Response.redirect(url, 307);
 }
