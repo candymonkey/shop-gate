@@ -1,24 +1,22 @@
 export const config = {
+  // Hanya jalankan middleware ini untuk halaman utama (root)
   matcher: '/',
 };
 
 export default function middleware(request) {
   const url = new URL(request.url);
-
-  // Ambil data negara langsung dari header Vercel
-  const country = request.headers.get('x-vercel-ip-country') || 'US';
   
-  // Ambil data bahasa browser
-  const acceptLanguage = request.headers.get('accept-language') || '';
-  const isIndo = country === 'ID' || acceptLanguage.toLowerCase().includes('id');
+  // Header ini adalah cara paling akurat untuk membaca negara di Vercel
+  const country = request.headers.get('x-vercel-ip-country') || 'US';
 
-  // Logika pengalihan
-  if (isIndo) {
+  // Jika terdeteksi Indonesia (ID)
+  if (country === 'ID') {
     url.pathname = '/id';
   } else {
+    // Selain itu (Luar Negeri)
     url.pathname = '/en';
   }
 
-  // Gunakan redirect 307 (Temporary) agar browser tidak 'hafal' link yang salah
+  // Gunakan redirect 307 (Temporary Redirect)
   return Response.redirect(url, 307);
 }
